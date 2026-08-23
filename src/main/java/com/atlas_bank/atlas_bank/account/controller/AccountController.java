@@ -1,5 +1,7 @@
 package com.atlas_bank.atlas_bank.account.controller;
 
+import com.atlas_bank.atlas_bank.account.dto.AccountResponse;
+import com.atlas_bank.atlas_bank.account.dto.CreateAccountRequest;
 import com.atlas_bank.atlas_bank.account.model.Account;
 import com.atlas_bank.atlas_bank.account.service.IAccountService;
 import lombok.RequiredArgsConstructor;
@@ -18,19 +20,42 @@ public class AccountController {
     private final IAccountService accountService;
 
     @PostMapping
-    public ResponseEntity<Account> create(@RequestBody Account account) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(accountService.create(account));
+    public ResponseEntity<AccountResponse> create(@RequestBody CreateAccountRequest request) {
+        Account account = new Account();
+        account.setAccountNumber(request.getAccountNumber());
+        account.setOwnerName(request.getOwnerName());
+        account.setEmail(request.getEmail());
+        account.setType(request.getType());
+        account.setBalance(request.getBalance());
+
+        Account saved = accountService.create(account);
+        return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(saved));
     }
 
     @GetMapping
-    public ResponseEntity<List<Account>> findAll() {
-        return ResponseEntity.status(HttpStatus.OK).body(accountService.findAll());
+    public ResponseEntity<List<AccountResponse>> findAll() {
+        List<AccountResponse> responses = accountService.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
+        return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Account> findById(@PathVariable UUID id) {
-        return ResponseEntity.status(HttpStatus.OK).body(accountService.findById(id));
+    public ResponseEntity<AccountResponse> findById(@PathVariable UUID id) {
+        return ResponseEntity.status(HttpStatus.OK).body(toResponse(accountService.findById(id)));
     }
 
+    private AccountResponse toResponse(Account account) {
+        AccountResponse response = new AccountResponse();
+        response.setId(account.getId());
+        response.setAccountNumber(account.getAccountNumber());
+        response.setOwnerName(account.getOwnerName());
+        response.setEmail(account.getEmail());
+        response.setBalance(account.getBalance());
+        response.setStatus(account.getStatus());
+        response.setCreatedAt(account.getCreatedAt());
+        return response;
+    }
 
 }
