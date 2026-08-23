@@ -1,5 +1,6 @@
 package com.atlas_bank.atlas_bank.account.service;
 
+import com.atlas_bank.atlas_bank.account.exception.AccountNotFoundException;
 import com.atlas_bank.atlas_bank.account.model.Account;
 import com.atlas_bank.atlas_bank.account.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class AccountService implements IAccountService {
     @Override
     public Account findById(UUID id) {
         return accountRepository.findById(id).orElseThrow(
-                () -> new RuntimeException("Account not found")
+                () -> new AccountNotFoundException(id)
         );
     }
 }

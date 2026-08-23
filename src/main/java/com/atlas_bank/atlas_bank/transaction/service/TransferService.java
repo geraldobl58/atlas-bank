@@ -1,6 +1,9 @@
 package com.atlas_bank.atlas_bank.transaction.service;
 
+import com.atlas_bank.atlas_bank.account.exception.AccountNotFoundException;
 import com.atlas_bank.atlas_bank.account.model.Account;
+import com.atlas_bank.atlas_bank.transaction.exception.AccountNotActiveException;
+import com.atlas_bank.atlas_bank.transaction.exception.InsufficientFundsException;
 import com.atlas_bank.atlas_bank.transaction.model.Transaction;
 import com.atlas_bank.atlas_bank.account.repository.AccountRepository;
 import com.atlas_bank.atlas_bank.transaction.repository.TransactionRepository;
@@ -24,20 +27,20 @@ public class TransferService implements ITransferService {
     @Transactional
     public Transaction execute(UUID fromId, UUID toId, BigDecimal amount) {
         Account from = accountRepository.findById(fromId)
-                .orElseThrow(() -> new RuntimeException("Account not found"));
+                .orElseThrow(() -> new AccountNotFoundException(fromId));
         Account to = accountRepository.findById(toId)
-                .orElseThrow(() -> new RuntimeException("Account not found"));
+                .orElseThrow(() -> new AccountNotFoundException(toId));
 
         if (!"ACTIVE".equals(from.getStatus())) {
-            throw new RuntimeException("From account is not active");
+            throw new AccountNotActiveException(fromId, from.getStatus());
         }
 
         if (!"ACTIVE".equals(to.getStatus())) {
-            throw new RuntimeException("To account is not active");
+            throw new AccountNotActiveException(toId, to.getStatus());
         }
 
         if (from.getBalance().compareTo(amount) < 0) {
-            throw new RuntimeException("Insufficient balance");
+            throw new InsufficientFundsException(fromId, from.getBalance(), amount);
         }
 
         BigDecimal fee = feeCalculators
