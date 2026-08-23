@@ -15,11 +15,12 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class TransferService {
+public class TransferService implements ITransferService {
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
     private final List<FeeCalculator> feeCalculators;
 
+    @Override
     @Transactional
     public Transaction execute(UUID fromId, UUID toId, BigDecimal amount) {
         Account from = accountRepository.findById(fromId)

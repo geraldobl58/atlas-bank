@@ -10,9 +10,10 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class TransactionQueryService {
+public class TransactionQueryService implements ITransactionQueryService {
     private final TransactionRepository transactionRepository;
 
+    @Override
     public List<Transaction> getByAccountId(UUID accountId) {
         return transactionRepository.findBySourceAccountIdOrTargetAccountId(accountId, accountId);
     }

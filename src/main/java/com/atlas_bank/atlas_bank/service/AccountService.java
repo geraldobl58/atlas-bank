@@ -10,17 +10,20 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class AccountService {
+public class AccountService implements IAccountService {
     private final AccountRepository accountRepository;
 
+    @Override
     public Account create(Account account) {
         return accountRepository.save(account);
     }
 
+    @Override
     public List<Account> findAll() {
         return accountRepository.findAll();
     }
 
+    @Override
     public Account findById(UUID id) {
         return accountRepository.findById(id).orElseThrow(
                 () -> new RuntimeException("Account not found")
