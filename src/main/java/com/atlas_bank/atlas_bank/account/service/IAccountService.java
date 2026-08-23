@@ -1,6 +1,6 @@
-package com.atlas_bank.atlas_bank.service;
+package com.atlas_bank.atlas_bank.account.service;
 
-import com.atlas_bank.atlas_bank.model.Account;
+import com.atlas_bank.atlas_bank.account.model.Account;
 
 import java.util.List;
 import java.util.UUID;

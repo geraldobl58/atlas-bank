@@ -1,6 +1,6 @@
-package com.atlas_bank.atlas_bank.service;
+package com.atlas_bank.atlas_bank.transaction.service;
 
-import com.atlas_bank.atlas_bank.model.Transaction;
+import com.atlas_bank.atlas_bank.transaction.model.Transaction;
 
 import java.util.List;
 import java.util.UUID;

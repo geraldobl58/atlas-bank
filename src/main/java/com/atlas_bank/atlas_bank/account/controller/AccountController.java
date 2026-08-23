@@ -1,25 +1,21 @@
-package com.atlas_bank.atlas_bank.controller;
+package com.atlas_bank.atlas_bank.account.controller;
 
-import com.atlas_bank.atlas_bank.model.Account;
-import com.atlas_bank.atlas_bank.model.Transaction;
-import com.atlas_bank.atlas_bank.service.*;
+import com.atlas_bank.atlas_bank.account.model.Account;
+import com.atlas_bank.atlas_bank.account.service.IAccountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/accounts")
+@RequestMapping("/api/v1/accounts")
 @RequiredArgsConstructor
 public class AccountController {
 
     private final IAccountService accountService;
-    private final ITransferService transferService;
-    private final ITransactionQueryService transactionQueryService;
 
     @PostMapping
     public ResponseEntity<Account> create(@RequestBody Account account) {
@@ -36,13 +32,5 @@ public class AccountController {
         return ResponseEntity.status(HttpStatus.OK).body(accountService.findById(id));
     }
 
-    @PostMapping("/transfer")
-    public ResponseEntity<Transaction> transfer(@RequestParam UUID fromId, @RequestParam UUID toId, @RequestParam BigDecimal amount) {
-        return ResponseEntity.status(HttpStatus.OK).body(transferService.execute(fromId, toId, amount));
-    }
 
-    @GetMapping("/{id}/transactions")
-    public ResponseEntity<List<Transaction>> getTransactions(@PathVariable UUID id) {
-        return ResponseEntity.status(HttpStatus.OK).body(transactionQueryService.getByAccountId(id));
-    }
 }
