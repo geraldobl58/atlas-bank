@@ -2,7 +2,6 @@ package com.atlas_bank.atlas_bank.controller;
 
 import com.atlas_bank.atlas_bank.model.Account;
 import com.atlas_bank.atlas_bank.model.Transaction;
-import com.atlas_bank.atlas_bank.repository.TransactionRepository;
 import com.atlas_bank.atlas_bank.service.AccountService;
 import com.atlas_bank.atlas_bank.service.TransactionQueryService;
 import com.atlas_bank.atlas_bank.service.TransferService;

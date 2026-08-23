@@ -4,11 +4,13 @@ import com.atlas_bank.atlas_bank.model.Account;
 import com.atlas_bank.atlas_bank.model.Transaction;
 import com.atlas_bank.atlas_bank.repository.AccountRepository;
 import com.atlas_bank.atlas_bank.repository.TransactionRepository;
+import com.atlas_bank.atlas_bank.service.fee.FeeCalculator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -16,6 +18,7 @@ import java.util.UUID;
 public class TransferService {
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
+    private final List<FeeCalculator> feeCalculators;
 
     @Transactional
     public Transaction execute(UUID fromId, UUID toId, BigDecimal amount) {
@@ -36,14 +39,13 @@ public class TransferService {
             throw new RuntimeException("Insufficient balance");
         }
 
-        BigDecimal fee;
-        if ("SAVING".equals(from.getType())) {
-            fee = amount.multiply(new BigDecimal("0.01"));
-        } else if ("CHECKING".equals(from.getType())) {
-            fee = amount.multiply(new BigDecimal("0.15"));
-        } else {
-            fee = BigDecimal.ZERO;
-        }
+        BigDecimal fee = feeCalculators
+                .stream()
+                .filter(fc -> fc.supports(from.getType()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No fee calculator available " + from.getType()))
+                .calculateFee(amount);
+
 
         from.setBalance(from.getBalance().subtract(amount).subtract(fee));
         to.setBalance(to.getBalance().add(amount));
