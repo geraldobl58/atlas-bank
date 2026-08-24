@@ -17,11 +17,17 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
-public class TransferService implements ITransferService {
+public class TransferService extends TransactionProcessor<TransferContext> implements ITransferService {
     private final AccountRepository accountRepository;
-    private final TransactionRepository transactionRepository;
     private final List<FeeCalculator> feeCalculators;
+
+    public TransferService(TransactionRepository transactionRepository,
+            AccountRepository accountRepository, List<FeeCalculator> feeCalculators
+    ) {
+        super(transactionRepository);
+        this.accountRepository = accountRepository;
+        this.feeCalculators = feeCalculators;
+    }
 
     @Override
     @Transactional
@@ -31,36 +37,49 @@ public class TransferService implements ITransferService {
         Account to = accountRepository.findById(toId)
                 .orElseThrow(() -> new AccountNotFoundException(toId));
 
-        if (!"ACTIVE".equals(from.getStatus())) {
-            throw new AccountNotActiveException(fromId, from.getStatus());
+        return process(new TransferContext(from, to, amount));
+    }
+
+    @Override
+    protected void validate(TransferContext context) {
+        if (!"ACTIVE".equals(context.sourceAccountId().getStatus())) {
+            throw new AccountNotActiveException(context.sourceAccountId().getId(), context.sourceAccountId().getStatus());
         }
 
-        if (!"ACTIVE".equals(to.getStatus())) {
-            throw new AccountNotActiveException(toId, to.getStatus());
+        if (!"ACTIVE".equals(context.targetAccountId().getStatus())) {
+            throw new AccountNotActiveException(context.targetAccountId().getId(), context.targetAccountId().getStatus());
         }
 
-        if (from.getBalance().compareTo(amount) < 0) {
-            throw new InsufficientFundsException(fromId, from.getBalance(), amount);
+        if (context.sourceAccountId().getBalance().compareTo(context.amount()) < 0) {
+            throw new InsufficientFundsException(context.sourceAccountId().getId(), context.sourceAccountId().getBalance(), context.amount());
         }
+    }
 
-        BigDecimal fee = feeCalculators
+    @Override
+    protected BigDecimal calculateFee(TransferContext context) {
+        return feeCalculators
                 .stream()
-                .filter(fc -> fc.supports(from.getType()))
+                .filter(fc -> fc.supports(context.sourceAccountId().getType()))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("No fee calculator available " + from.getType()))
-                .calculateFee(amount);
+                .orElseThrow(() -> new RuntimeException("No fee calculator available " + context.sourceAccountId().getType()))
+                .calculateFee(context.amount());
+    }
 
+    @Override
+    protected void execute(TransferContext context, BigDecimal fee) {
+        context.sourceAccountId().setBalance(context.sourceAccountId().getBalance().subtract(context.amount()).subtract(fee));
+        context.targetAccountId().setBalance(context.targetAccountId().getBalance().add(context.amount()));
+        accountRepository.save(context.sourceAccountId());
+        accountRepository.save(context.targetAccountId());
+    }
 
-        from.setBalance(from.getBalance().subtract(amount).subtract(fee));
-        to.setBalance(to.getBalance().add(amount));
-        accountRepository.save(from);
-        accountRepository.save(to);
-
+    @Override
+    protected Transaction save(TransferContext context, BigDecimal fee) {
         Transaction transaction = new Transaction();
         transaction.setType("TRANSFER");
-        transaction.setSourceAccountId(fromId);
-        transaction.setTargetAccountId(toId);
-        transaction.setAmount(amount);
+        transaction.setSourceAccountId(context.sourceAccountId().getId());
+        transaction.setTargetAccountId(context.targetAccountId().getId());
+        transaction.setAmount(context.amount());
         transaction.setFee(fee);
         transaction.setStatus("COMPLETED");
 
