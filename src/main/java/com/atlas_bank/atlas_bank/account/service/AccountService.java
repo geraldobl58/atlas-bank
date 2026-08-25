@@ -5,6 +5,7 @@ import com.atlas_bank.atlas_bank.account.model.Account;
 import com.atlas_bank.atlas_bank.account.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,16 +16,19 @@ public class AccountService implements IAccountService {
     private final AccountRepository accountRepository;
 
     @Override
+    @Transactional
     public Account create(Account account) {
         return accountRepository.save(account);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Account> findAll() {
         return accountRepository.findAll();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Account findById(UUID id) {
         return accountRepository.findById(id).orElseThrow(
                 () -> new AccountNotFoundException(id)
