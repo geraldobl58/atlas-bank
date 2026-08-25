@@ -5,7 +5,7 @@ import com.atlas_bank.atlas_bank.transaction.dto.TransactionRequest;
 import com.atlas_bank.atlas_bank.transaction.dto.TransactionResponse;
 import com.atlas_bank.atlas_bank.transaction.model.Transaction;
 import com.atlas_bank.atlas_bank.transaction.service.ITransactionQueryService;
-import com.atlas_bank.atlas_bank.transaction.service.ITransferService;
+import com.atlas_bank.atlas_bank.transaction.service.transfer.ITransferService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
