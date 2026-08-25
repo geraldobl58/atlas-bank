@@ -1,5 +1,6 @@
 package com.atlas_bank.atlas_bank.transaction.service.transfer;
 
+import com.atlas_bank.atlas_bank.account.enums.AccountStatus;
 import com.atlas_bank.atlas_bank.account.exception.AccountNotFoundException;
 import com.atlas_bank.atlas_bank.account.model.Account;
 import com.atlas_bank.atlas_bank.transaction.service.event.TransactionExecutedEvent;
@@ -49,7 +50,7 @@ public class TransferService extends TransactionProcessor<TransferContext> imple
 
         eventPublisher.publishEvent(new TransactionExecutedEvent(
                 transaction.getId(),
-                transaction.getType(),
+                transaction.getType().name(),
                 transaction.getSourceAccountId(),
                 transaction.getTargetAccountId(),
                 transaction.getAmount(),
@@ -60,17 +61,17 @@ public class TransferService extends TransactionProcessor<TransferContext> imple
     }
 
     @Override
-    protected void validate(TransferContext context) {
-        if (!"ACTIVE".equals(context.sourceAccountId().getStatus())) {
-            throw new AccountNotActiveException(context.sourceAccountId().getId(), context.sourceAccountId().getStatus());
+    protected void validate(TransferContext ctx) {
+        if (ctx.sourceAccountId().getStatus() != AccountStatus.ACTIVE) {
+            throw new AccountNotActiveException(ctx.sourceAccountId().getId(), ctx.sourceAccountId().getStatus().name());
         }
 
-        if (!"ACTIVE".equals(context.targetAccountId().getStatus())) {
-            throw new AccountNotActiveException(context.targetAccountId().getId(), context.targetAccountId().getStatus());
+        if (ctx.targetAccountId().getStatus() != AccountStatus.ACTIVE) {
+            throw new AccountNotActiveException(ctx.targetAccountId().getId(), ctx.targetAccountId().getStatus().name());
         }
 
-        if (context.sourceAccountId().getBalance().compareTo(context.amount()) < 0) {
-            throw new InsufficientFundsException(context.sourceAccountId().getId(), context.sourceAccountId().getBalance(), context.amount());
+        if (ctx.sourceAccountId().getBalance().compareTo(ctx.amount()) < 0) {
+            throw new InsufficientFundsException(ctx.sourceAccountId().getId(), ctx.sourceAccountId().getBalance(), ctx.amount());
         }
     }
 

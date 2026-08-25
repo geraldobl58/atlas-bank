@@ -1,5 +1,7 @@
 package com.atlas_bank.atlas_bank.transaction.model;
 
+import com.atlas_bank.atlas_bank.transaction.enums.TransactionStatus;
+import com.atlas_bank.atlas_bank.transaction.enums.TransactionType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,8 +21,9 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private String type;
+    private TransactionType type;
 
     @Column(name = "source_account_id", nullable = false)
     private UUID sourceAccountId;
@@ -34,8 +37,9 @@ public class Transaction {
     @Column(nullable = false)
     private BigDecimal fee;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
-    private String status;
+    private TransactionStatus status;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -45,6 +49,6 @@ public class Transaction {
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
-        if (this.status == null) this.status = "EXECUTED";
+        if (this.status == null) this.status = TransactionStatus.EXECUTED;
     }
 }
