@@ -32,8 +32,19 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST, "/api/v1/transactions/transfer").hasAnyRole("USER", "ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/transactions/{id}/transactions").hasAnyRole("USER", "ADMIN")
 
+                                // AUTH
+                                .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+
                                 // POSTGRES
                                 .requestMatchers("/postgres-console/**").permitAll()
+
+                                // SWAGGER
+                                .requestMatchers(
+                                        "/swagger-ui/**",
+                                        "/swagger-ui.html",
+                                        "/v3/api-docs/**",
+                                        "/v3/api-docs.yaml"
+                                ).permitAll()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt

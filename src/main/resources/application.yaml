@@ -20,5 +20,11 @@ spring:
         jwt:
           issuer-uri: http://localhost:8080/realms/atlas-bank
 
+keycloak:
+  url: http://localhost:8080
+  realm: atlas-bank
+  client-id: atlas-bank-api
+  client-secret: DMSkXwC0p0Xo5eBwnzgUTqqQR0YXNfNZ
+
 server:
   port: 8081

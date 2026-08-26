@@ -1,6 +1,7 @@
 package com.atlas_bank.atlas_bank.shared.exception;
 
 import com.atlas_bank.atlas_bank.account.exception.AccountNotFoundException;
+import com.atlas_bank.atlas_bank.auth.exception.InvalidCredentialsException;
 import com.atlas_bank.atlas_bank.transaction.exception.AccountNotActiveException;
 import com.atlas_bank.atlas_bank.transaction.exception.InsufficientFundsException;
 import com.atlas_bank.atlas_bank.transaction.service.exception.FraudCheckException;
@@ -63,6 +64,16 @@ public class GlobalExceptionHandler {
 
         problem.setProperty("errors", errors);
 
+        return problem;
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ProblemDetail handleInvalidCredentials(InvalidCredentialsException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNAUTHORIZED,
+                ex.getMessage()
+        );
+        problem.setTitle("Invalid Credentials");
         return problem;
     }
 
