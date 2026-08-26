@@ -3,7 +3,9 @@ package com.atlas_bank.atlas_bank.account.controller;
 import com.atlas_bank.atlas_bank.account.dto.AccountMapper;
 import com.atlas_bank.atlas_bank.account.dto.AccountResponse;
 import com.atlas_bank.atlas_bank.account.dto.CreateAccountRequest;
+import com.atlas_bank.atlas_bank.account.dto.DashboardResponse;
 import com.atlas_bank.atlas_bank.account.model.Account;
+import com.atlas_bank.atlas_bank.account.service.AccountDashboardFacade;
 import com.atlas_bank.atlas_bank.account.service.IAccountService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -32,6 +34,18 @@ public class AccountController {
 
     private final IAccountService accountService;
     private final AccountMapper accountMapper;
+    private final AccountDashboardFacade accountDashboardFacade;
+
+    @GetMapping("/{id}/dashboard")
+    @Operation(summary = "Dashboard", description = "Gerenciamento de Dashboard")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Visualizar dados do dashboard",
+                    content = @Content(schema = @Schema(implementation = DashboardResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Acesso negado — requer role ADMIN")
+    })
+    public ResponseEntity<DashboardResponse> getDashboard(@PathVariable UUID id) {
+        return ResponseEntity.status(HttpStatus.OK).body(accountDashboardFacade.getDashboard(id));
+    }
 
     @PostMapping
     @Operation(summary = "Criar conta", description = "Cria uma nova conta bancária. Requer role ADMIN.")

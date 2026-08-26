@@ -26,6 +26,7 @@ public class SecurityConfig {
                                 // ACCOUNTS
                                 .requestMatchers(HttpMethod.POST, "/api/v1/accounts").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/accounts").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/accounts/{id}/dashboard").hasAnyRole("USER", "ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/accounts/{id}").hasAnyRole("USER", "ADMIN")
 
                                 // TRANSACTIONS
@@ -45,6 +46,8 @@ public class SecurityConfig {
                                         "/v3/api-docs/**",
                                         "/v3/api-docs.yaml"
                                 ).permitAll()
+
+                                .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt
