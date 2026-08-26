@@ -1,0 +1,18 @@
+package com.atlas_bank.atlas_bank.transaction.validation.chain;
+
+import com.atlas_bank.atlas_bank.transaction.exception.InsufficientFundsException;
+import com.atlas_bank.atlas_bank.transaction.service.transfer.TransferContext;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
+
+@Component
+@Order(2)
+public class SufficientFundsValidator implements TransferValidator {
+    @Override
+    public void validate(TransferContext ctx) {
+        if (ctx.sourceAccountId().getBalance().compareTo(ctx.amount()) < 0) {
+            throw new InsufficientFundsException(ctx.sourceAccountId().getId(), ctx.sourceAccountId().getBalance(), ctx.amount());
+        }
+
+    }
+}

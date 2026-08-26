@@ -14,6 +14,7 @@ import com.atlas_bank.atlas_bank.transaction.repository.TransactionRepository;
 import com.atlas_bank.atlas_bank.transaction.service.exception.FraudCheckException;
 import com.atlas_bank.atlas_bank.transaction.service.factory.TransactionFactory;
 import com.atlas_bank.atlas_bank.transaction.service.fee.FeeCalculator;
+import com.atlas_bank.atlas_bank.transaction.validation.chain.TransferValidator;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,20 +28,20 @@ public class TransferService extends TransactionProcessor<TransferContext> imple
     private final AccountRepository accountRepository;
     private final List<FeeCalculator> feeCalculators;
     private final ApplicationEventPublisher eventPublisher;
-    private final FraudChecker fraudChecker;
+    private final List<TransferValidator> transferValidators;
 
     public TransferService(
             TransactionRepository transactionRepository,
             AccountRepository accountRepository,
             List<FeeCalculator> feeCalculators,
             ApplicationEventPublisher eventPublisher,
-            FraudChecker fraudChecker
+            List<TransferValidator> transferValidators
     ) {
         super(transactionRepository);
         this.accountRepository = accountRepository;
         this.feeCalculators = feeCalculators;
         this.eventPublisher = eventPublisher;
-        this.fraudChecker = fraudChecker;
+        this.transferValidators = transferValidators;
     }
 
 
@@ -68,23 +69,7 @@ public class TransferService extends TransactionProcessor<TransferContext> imple
 
     @Override
     protected void validate(TransferContext ctx) {
-        if (ctx.sourceAccountId().getStatus() != AccountStatus.ACTIVE) {
-            throw new AccountNotActiveException(ctx.sourceAccountId().getId(), ctx.sourceAccountId().getStatus().name());
-        }
-
-        if (ctx.targetAccountId().getStatus() != AccountStatus.ACTIVE) {
-            throw new AccountNotActiveException(ctx.targetAccountId().getId(), ctx.targetAccountId().getStatus().name());
-        }
-
-        if (ctx.sourceAccountId().getBalance().compareTo(ctx.amount()) < 0) {
-            throw new InsufficientFundsException(ctx.sourceAccountId().getId(), ctx.sourceAccountId().getBalance(), ctx.amount());
-        }
-
-        FraudCheckResult fraudCheckResult = fraudChecker.check(ctx.sourceAccountId().getId(), ctx.amount());
-
-        if (fraudCheckResult.blocked()) {
-            throw new FraudCheckException(fraudCheckResult.reason());
-        }
+        transferValidators.forEach(validator -> validator.validate(ctx));
     }
 
     @Override
