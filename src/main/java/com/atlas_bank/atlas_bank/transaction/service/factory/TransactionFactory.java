@@ -11,14 +11,14 @@ import java.math.BigDecimal;
 public class TransactionFactory {
 
     public static Transaction createTransfer(TransferContext ctx, BigDecimal fee) {
-        Transaction transaction = new Transaction();
-        transaction.setType(TransactionType.TRANSFER);
-        transaction.setCreatedBy("SYSTEM");
-        transaction.setSourceAccountId(ctx.sourceAccountId().getId());
-        transaction.setTargetAccountId(ctx.targetAccountId().getId());
-        transaction.setAmount(ctx.amount());
-        transaction.setFee(fee);
-        transaction.setStatus(TransactionStatus.PENDING);
+        Transaction transaction = Transaction.builder()
+                        .type(TransactionType.TRANSFER)
+                        .sourceAccountId(ctx.sourceAccountId().getId())
+                        .targetAccountId(ctx.targetAccountId().getId())
+                        .amount(ctx.amount())
+                        .fee(fee)
+                        .status(TransactionStatus.PENDING)
+                                .build();
 
         transaction.advancedTo(new PendingState());
 
