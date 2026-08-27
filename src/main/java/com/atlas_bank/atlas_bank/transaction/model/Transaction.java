@@ -2,6 +2,7 @@ package com.atlas_bank.atlas_bank.transaction.model;
 
 import com.atlas_bank.atlas_bank.transaction.enums.TransactionStatus;
 import com.atlas_bank.atlas_bank.transaction.enums.TransactionType;
+import com.atlas_bank.atlas_bank.transaction.model.state.*;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -41,6 +42,9 @@ public class Transaction {
     @Column(name = "status", nullable = false, length = 20)
     private TransactionStatus status;
 
+    @Transient
+    private TransactionState state;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -50,5 +54,24 @@ public class Transaction {
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
         if (this.status == null) this.status = TransactionStatus.EXECUTED;
+    }
+
+    public TransactionState getState() {
+        if (state == null) {
+            state = switch (status) {
+                case PENDING -> new PendingState();
+                case VALIDATED -> new ValidateState();
+                case EXECUTED -> new ExecutedState();
+                case REJECTED -> new RejectedState();
+                case REVERSED -> new ReversedState();
+            };
+        }
+
+        return state;
+    }
+
+    public void advancedTo(TransactionState newState) {
+        state = newState;
+        status = newState.status();
     }
 }

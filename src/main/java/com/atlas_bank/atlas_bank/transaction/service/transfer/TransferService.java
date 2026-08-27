@@ -55,6 +55,10 @@ public class TransferService extends TransactionProcessor<TransferContext> imple
 
         Transaction transaction = process(new TransferContext(from, to, amount));
 
+        transaction.advancedTo(transaction.getState().validate());
+        transaction.advancedTo(transaction.getState().execute());
+        transactionRepository.save(transaction);
+
         eventPublisher.publishEvent(new TransactionExecutedEvent(
                 transaction.getId(),
                 transaction.getType().name(),
